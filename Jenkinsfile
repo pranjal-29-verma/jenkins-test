@@ -1,9 +1,13 @@
 pipeline {
-  agent any
+  agent {
+    docker {
+      image 'python:3.11-slim'  // use whatever base your app needs
+      args '--network jenkins-net'  // so it can reach your app container
+    }
+  }
   environment {
     IMAGE_NAME = "jenkins-test-app"
     CONTAINER_NAME = "jenkins-test-container-${env.BUILD_NUMBER}"
-    HEALTH_URL = "http://localhost:8002/health/"
   }
   stages {
     stage('Checkout') {
@@ -21,7 +25,13 @@ pipeline {
         sh '''#!/bin/bash
 set -e
 
-docker run -d --name "${CONTAINER_NAME}" -p 8002:8000 "${IMAGE_NAME}:${BUILD_NUMBER}"
+docker network create jenkins-net || true
+docker network connect jenkins-net jenkins || true
+
+docker run -d \
+    --name "${CONTAINER_NAME}" \
+    --network jenkins-net \
+    "${IMAGE_NAME}:${BUILD_NUMBER}"
 '''
       }
     }
@@ -31,7 +41,7 @@ docker run -d --name "${CONTAINER_NAME}" -p 8002:8000 "${IMAGE_NAME}:${BUILD_NUM
 set -e
 
 for i in $(seq 1 20); do
-  if curl -sSf "${HEALTH_URL}" | grep -q '"status": *"ok"'; then
+  if curl -sSf "http://${CONTAINER_NAME}:8000/health/" | grep -q '"status": *"ok"'; then
     echo "Health check passed"
     exit 0
   fi
