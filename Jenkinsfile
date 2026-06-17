@@ -1,8 +1,8 @@
 pipeline {
   agent {
     docker {
-      image 'python:3.11-slim'  // use whatever base your app needs
-      args '--network jenkins-net'  // so it can reach your app container
+      image 'jenkins-agent:latest'
+      args '-v /var/run/docker.sock:/var/run/docker.sock --network jenkins-net'
     }
   }
   environment {
