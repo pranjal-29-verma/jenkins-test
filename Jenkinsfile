@@ -58,6 +58,8 @@ docker run -d \
   post {
     always {
       sh 'docker rm -f "${CONTAINER_NAME}" || true'
+      sh 'docker image prune -f'
+      sh 'docker rmi ${IMAGE_NAME}:${BUILD_NUMBER} || true'
     }
   }
 }
