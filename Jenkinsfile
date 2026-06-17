@@ -3,7 +3,7 @@ pipeline {
   environment {
     IMAGE_NAME = "jenkins-test-app"
     CONTAINER_NAME = "jenkins-test-container-${env.BUILD_NUMBER}"
-    HEALTH_URL = "http://localhost:8000/health/"
+    HEALTH_URL = "http://localhost:8002/health/"
   }
   stages {
     stage('Checkout') {
@@ -21,7 +21,7 @@ pipeline {
         sh '''#!/bin/bash
 set -e
 
-docker run -d --name "${CONTAINER_NAME}" -p 8000:8000 "${IMAGE_NAME}:${BUILD_NUMBER}"
+docker run -d --name "${CONTAINER_NAME}" -p 8002:8000 "${IMAGE_NAME}:${BUILD_NUMBER}"
 '''
       }
     }
