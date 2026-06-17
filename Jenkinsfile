@@ -25,8 +25,7 @@ pipeline {
         sh '''#!/bin/bash
 set -e
 
-docker network create jenkins-net || true
-docker network connect jenkins-net jenkins || true
+docker rm -f "${CONTAINER_NAME}" >/dev/null 2>&1 || true
 
 docker run -d \
     --name "${CONTAINER_NAME}" \
@@ -41,7 +40,7 @@ docker run -d \
 set -e
 
 for i in $(seq 1 20); do
-  if curl -sSf "http://${CONTAINER_NAME}:8000/health/" | grep -q '"status": *"ok"'; then
+  if docker exec "${CONTAINER_NAME}" curl -sSf http://127.0.0.1:8000/health/ | grep -q '"status": *"ok"'; then
     echo "Health check passed"
     exit 0
   fi
